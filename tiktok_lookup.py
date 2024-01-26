@@ -14,24 +14,38 @@ class tiktokservice:
                 content = await r.text()
                 soup = BeautifulSoup(content, "html.parser")
 
-                full_title = soup.find("meta", property="og:title")["content"]
-                user = full_title.split("(@")
+                full_title = soup.find("meta", property="og:title")
+                if not full_title:
+                    return None
+
+                user = full_title["content"].split("(@")
                 if len(user) < 2:
                     return None
 
-                description=soup.find("meta", property="og:description")["content"]
-                start=description.find("Followers. ")
-                end=description.find(".Watch", start + len("Followers. "))
+                description = soup.find("meta", property="og:description")
+                if not description:
+                    return None
+
+                start = description["content"].find("Followers. ")
+                end = description["content"].find(".Watch", start + len("Followers. "))
                 if start != -1 and end != -1:
-                    desc=description[start + len("Followers. "):end].strip()
+                    desc = description["content"][start + len("Followers. "):end].strip()
                 else:
-                    desc="No bio"
-    
-                avatar_url=soup.find("meta", property="og:image")["content"]
-                verified=(soup.find("circle", {"fill": "#20D5EC"}))
-                likes=(soup.find(title="Likes").text)
-                followers=(soup.find(title="Followers").text)
-                following=(soup.find(title="Following").text)
+                    desc = "No bio"
+
+                avatar_url = soup.find("meta", property="og:image")
+                if not avatar_url:
+                    return None
+
+                avatar_url = avatar_url["content"]
+                verified = bool(soup.find("circle", {"fill": "#20D5EC"}))
+                likes = soup.find(title="Likes")
+                followers = soup.find(title="Followers")
+                following = soup.find(title="Following")
+
+                likes = likes.text if likes else "N/A"
+                followers = followers.text if followers else "N/A"
+                following = following.text if following else "N/A"
 
                 profile = {
                     'name': user[1].split(")")[0],
